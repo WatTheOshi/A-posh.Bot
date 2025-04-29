@@ -9,6 +9,7 @@ import time
 import humanfriendly
 from datetime import datetime, timezone, timedelta
 
+test_mode = False
 
 # --- Модераторские команды ---
 def setup(bot):
