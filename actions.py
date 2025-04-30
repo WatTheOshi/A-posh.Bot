@@ -125,6 +125,22 @@ def setup(bot):
         await ctx.send(f":heartpulse: \n{ctx.author.mention} {choice} {member.mention}!")
 
 
+    @bot.command(name="stand")
+    async def stand(ctx):
+        """Присылает гифку со стендами из Джоджо"""
+        await ctx.send("https://tenor.com/bCwYG.gif")
+
+    @bot.command(name="bnuysteal")
+    async def bnuysteal(ctx):
+        """Присылает гифку с кражей кролика"""
+        await ctx.send("https://tenor.com/bV8kF.gif")
+
+    @bot.command(name="bnuyreturn")
+    async def bnuyreturn(ctx):
+        """Присылает гифку с возвращением кролика"""
+        await ctx.send("https://tenor.com/rZ6HCDf6wU8.gif")
+
+
     @bot.command(name="rape")
     async def rape(ctx, member: discord.Member):
         await ctx.send(f"бывают же ебланы... не смей такое писать, {ctx.author.mention}!")

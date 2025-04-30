@@ -9,6 +9,36 @@ import time
 import humanfriendly
 from datetime import datetime, timezone, timedelta
 
+
+LOG_FILE = "mute_logs.json"
+
+def log_timeout_action(user, moderator, reason, duration_seconds, action="mute"):
+    log_entry = {
+        "user_id": user.id,
+        "username": str(user),
+        "moderator_id": moderator.id,
+        "moderator_name": str(moderator),
+        "reason": reason,
+        "duration_seconds": duration_seconds,
+        "timestamp": datetime.utcnow().isoformat(),
+        "action": action
+    }
+
+    # Создаём файл если его нет
+    if not os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f, indent=4)
+
+    # лог
+    with open(LOG_FILE, "r+", encoding="utf-8") as f:
+        data = json.load(f)
+        data.append(log_entry)
+        f.seek(0)
+        json.dump(data, f, indent=4)
+        f.truncate()
+
+
+
 test_mode = False
 
 # --- Модераторские команды ---
@@ -22,6 +52,16 @@ def setup(bot):
                 try:
                     t = humanfriendly.parse_timespan(time)
                     await member.timeout(timedelta(seconds=t), reason=reason)
+
+                    log_timeout_action(
+                    user=member,
+                    moderator=ctx.author,
+                    reason=reason,
+                    duration_seconds=int(t),
+                    action="mute"
+                )
+
+
                     embed = discord.Embed(
                         title='Успешно замучен',
                         description=f'**{member.mention}** заткнулся на **{time}**\n\n**По причине: `{reason}`**',
@@ -53,6 +93,16 @@ def setup(bot):
         if member is not None:
             try:
                 await member.timeout(None, reason=reason)
+
+                log_timeout_action(
+                user=member,
+                moderator=ctx.author,
+                reason=reason,
+                duration_seconds=0,
+                action="unmute"
+                )
+
+
                 embed = discord.Embed(
                     title='Успешно размучен',
                     description=f'**{member.mention}** снова может гавкать!\n\n**По причине: `{reason}`**',
@@ -133,3 +183,46 @@ def setup(bot):
         except discord.HTTPException:
             await ctx.send("Не получается... Пиздец, не получается...")
 
+    @bot.command(aliases=['mutes', 'муты', 'mutelog'])
+    @commands.has_permissions(administrator=True)
+    async def show_mutes(ctx):
+        """Показывает последние 10 мутов."""
+        try:
+            if not os.path.exists(LOG_FILE):
+                await ctx.send("Картотека пустая...")
+                return
+
+            with open(LOG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            # Фильтруем только муты
+            mutes = [entry for entry in data if entry["action"] == "mute"]
+
+            if not mutes:
+                await ctx.send("Пока никого не мутила... Ау?")
+                return
+
+            # Берём последние 10
+            last_mutes = mutes[-10:][::-1]  # свежие сверху
+
+            embed = discord.Embed(
+                title="🔇 Последние жертвы",
+                color=discord.Color.light_grey()
+            )
+
+            for entry in last_mutes:
+                user_name = entry["username"]
+                reason = entry.get("reason", "Не указана")
+                duration = humanfriendly.format_timespan(entry["duration_seconds"])
+                time_str = entry["timestamp"].replace("T", " ").split(".")[0] + " UTC"
+
+                embed.add_field(
+                    name=user_name,
+                    value=f"⏱ `{duration}` | 📝 `{reason}`\n🕒 `{time_str}`",
+                    inline=False
+                )
+
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            await ctx.send(f"Произошла ошибка при чтении логов: {e}")
