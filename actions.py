@@ -94,8 +94,36 @@ def setup(bot):
         await ctx.send("За последнее время не от чего уклоняться...")
     
     
+    @bot.command(name="dolove") # хз я чето кринжанул но меня попросили
+    async def dolove(ctx, member: discord.Member):
+        """Слишком близкие взаимодействия пользователей (с особым ответом для создателя)."""
+        special_user_id = 773282996324270141  # ID создателя
+    
+        if member == ctx.author:
+            await ctx.send("Эээ... ну, классика, да?...")
+            return
+        if member == bot.user:
+            if ctx.author.id == special_user_id:
+                await ctx.send("https://tenor.com/bR7LV.gif")
+            else:
+                await ctx.send("_**DODGE!**_\nДа как ты обращаешься со мной?!")
+                await ctx.send("&hit {ctx.author.mention}")
+            return
+        
+        interactions = [
+            "нежно прижимается к", 
+            "страстно шепчет что-то на ухо", 
+            "пытается флиртовать с", 
+            "притягивает к себе",
+            "ласково смотрит на",
+        ]
+        choice = random.choice(interactions)
+
+        await ctx.send(f":heartpulse: \n{ctx.author.mention} {choice} {member.mention}!")
+
+
     @bot.command(name="rape")
     async def rape(ctx, member: discord.Member):
-        await ctx.send(f"еблан?")
+        await ctx.send(f"бывают же ебланы... не смей такое писать, {ctx.author.mention}!")
         return
 
