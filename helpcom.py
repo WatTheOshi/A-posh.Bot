@@ -33,6 +33,7 @@ def setup(bot):
         embed.add_field(name="**&pat @user**", value='Погладь своего "котенка"!', inline=False)
         embed.add_field(name="**&kiss @user**", value="Целуй тех кто считаешь что заслужил!", inline=False)
         embed.add_field(name="**&hit @user**", value="Ударь негодяев!", inline=False)
+        embed.add_field(name="**&dolove @user**", value="Что-то более серьезное, чем просто поцелуй!", inline=False)
         embed.add_field(name="**&dodge**", value="Попытка избежать того что написано выше!", inline=False)
         # В добавок, есть особенности :
         embed.add_field(name="_**В добавок, есть особенности :**_", value="", inline=False)

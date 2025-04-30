@@ -88,6 +88,9 @@ def setup(bot):
                 elif message.content.startswith("&pat"):
                     await ctx.send(f"_**DODGE!**_ \n{ctx.author.mention} уворачивается от поглаживания!")
                     return
+                elif message.content.startswith("&dolove"):
+                    await ctx.send(f"_**DODGE!**_ \n{ctx.author.mention} уклоняется от неожиданных действий!")
+                    return
                 elif message.content.startswith("&dodge"):
                     await ctx.send("https://tenor.com/bVA8m.gif")
                     return
