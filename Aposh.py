@@ -11,9 +11,6 @@ from datetime import datetime, timezone, timedelta
 from cap_game import setup
 
 
-intents = discord.Intents.default()
-intents.members = True
-
 # --- Конфигурация бота ---
 bot = commands.Bot(
     command_prefix="&",
@@ -50,6 +47,9 @@ async def on_ready():
     """Вызывается при запуске бота."""
     print("Я готова к приказам! >~<")
 
+@bot.event
+async def on_error(event, *args, **kwargs):
+    print(f"Ошибка в событии {event}: {args} {kwargs}")
 
 # --- Запуск бота ---
 bot.run(os.getenv("BOT_TOKEN"))

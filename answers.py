@@ -10,6 +10,32 @@ import humanfriendly
 from datetime import datetime, timezone, timedelta
 import re
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, 'data')
+CONFIG_FILE = os.path.join(DATA_PATH, 'config.json')
+ACTIVITY_FILE = os.path.join(DATA_PATH, 'activity_log.json')
+INVENTORY_FILE = os.path.join(DATA_PATH, 'inventory_log.json')
+INACTIVITY_NOTIFY_FILE = os.path.join(DATA_PATH, 'inactive_notified.json')
+
+CHECK_INTERVAL = 60 * 60         # Проверка раз в час
+INACTIVITY_THRESHOLD = 48 * 3600 # 48 часов в секундах
+
+# --- Конфигурация бота перемещенная с игры в пробки---
+def ensure_data_dir(path=DATA_PATH):
+    os.makedirs(path, exist_ok=True)
+
+async def load_json(path):
+    ensure_data_dir(os.path.dirname(path))
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+async def save_json(path, data):
+    ensure_data_dir(os.path.dirname(path))
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 last_response_time = None
 cooldown_seconds = 13  # Задержка между ответами (в секундах)
@@ -17,20 +43,24 @@ cooldown_seconds = 13  # Задержка между ответами (в сек
 def setup(bot):
     @bot.event
     async def on_message(message):
-        """Обрабатывает все сообщения в чате."""
-        global last_response_time
-    
-        if message.author.bot:
-            return
-    
         message_content = message.content.lower()
         now = datetime.now(timezone.utc)
-    
-        # Проверка задержки между ответами
-        if last_response_time is not None:
-            if (now - last_response_time).total_seconds() < cooldown_seconds:
-                return
-    
+        # Переместил сюда проверку активности из-за конфликтов on_message в модуле пробок
+
+        if message.author.bot:
+            return
+
+        # Логика активности
+        activity = await load_json(ACTIVITY_FILE)
+        activity[str(message.author.id)] = message.created_at.timestamp()
+        await save_json(ACTIVITY_FILE, activity)
+
+        # Удаление из уведомлений
+        notified = await load_json(INACTIVITY_NOTIFY_FILE)
+        if str(message.author.id) in notified:
+            del notified[str(message.author.id)]
+            await save_json(INACTIVITY_NOTIFY_FILE, notified)
+
         # Ответы на вопросы о любви
         love_questions = [
             "кого ты любишь", "кто твой создатель", "кого ты считаешь важным", 
@@ -79,8 +109,10 @@ def setup(bot):
         ]
     
         if bot.user in message.mentions:
+            print("[answers] Бот упомянут в сообщении.")  # Отладочный вывод
             for question in love_questions:
                 if question in message_content:
+                    print(f"[answers] Найден вопрос о любви: {question}")  # Отладочный вывод
                     async with message.channel.typing():
                         await asyncio.sleep(random.uniform(0.5, 2.0))
                         await message.channel.send(random.choice(love_answers))
@@ -107,6 +139,7 @@ def setup(bot):
     
         for call in calls:
             if call in message_content.split() or f" {call} " in f" {message_content} ":
+                print(f"[answers] Найдено обращение: {call}")  # Отладочный вывод
                 async with message.channel.typing():
                     await asyncio.sleep(random.uniform(0.5, 2.0))
                     responses = [
@@ -135,4 +168,7 @@ def setup(bot):
                     last_response_time = now
                 return
             
+            
+        # Передача управления командам
+        print("[answers] Передача управления bot.process_commands.")  # Отладочный вывод
         await bot.process_commands(message)

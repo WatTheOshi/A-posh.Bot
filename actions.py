@@ -12,6 +12,9 @@ from datetime import datetime, timezone, timedelta
 
 # --- Команды взаимодействия ---
 def setup(bot):
+    # Убедимся, что здесь нет `on_message`, чтобы избежать конфликта
+    pass
+
     @bot.command(name="hug")
     async def hug(ctx, member: discord.Member):
         """Обнимает указанного пользователя."""

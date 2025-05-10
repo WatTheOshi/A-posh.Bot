@@ -43,6 +43,9 @@ test_mode = False
 
 # --- Модераторские команды ---
 def setup(bot):
+     # Убедимся, что здесь нет `on_message`, чтобы избежать конфликта
+    pass
+
     @bot.command(aliases=['mute', 'мут', 'мьют', 'timemute'])
     @commands.has_permissions(administrator=True)
     async def timeout(ctx, member: discord.Member = None, time=None, *, reason=None):

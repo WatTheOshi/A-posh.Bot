@@ -5,10 +5,6 @@ import os
 from datetime import timedelta
 
 # -------------------- Configuration --------------------
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, 'data')
 CONFIG_FILE = os.path.join(DATA_PATH, 'config.json')
@@ -46,19 +42,6 @@ def setup(bot: commands.Bot):
         if not os.path.isfile(INVENTORY_FILE):
             await save_json(INVENTORY_FILE, {})
         check_inactivity.start()
-
-    @bot.event
-    async def on_message(message):
-        if message.author.bot:
-            return
-        activity = await load_json(ACTIVITY_FILE)
-        activity[str(message.author.id)] = message.created_at.timestamp()
-        await save_json(ACTIVITY_FILE, activity)
-        notified = await load_json(INACTIVITY_NOTIFY_FILE)
-        if str(message.author.id) in notified:
-            del notified[str(message.author.id)]
-            await save_json(INACTIVITY_NOTIFY_FILE, notified)
-        await bot.process_commands(message)
 
     # -------------------- Background Tasks --------------------
     @tasks.loop(seconds=CHECK_INTERVAL)
