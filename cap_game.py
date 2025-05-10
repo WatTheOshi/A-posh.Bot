@@ -137,7 +137,7 @@ def setup(bot: commands.Bot):
             return
         
         # Проверка, что вор ещё не имеет пробку от жертвы
-        if target_id(item.endswith(f"-{ctx.author.id}") for item in inventory.get(thief_id, [])):
+        if any(item.endswith(f"-{target.id}") for item in inventory.get(thief_id, [])):
             await ctx.send(f'{ctx.author.mention}, у тебя она уже есть!')
             return
         
@@ -145,7 +145,7 @@ def setup(bot: commands.Bot):
         target_items = inventory.get(target_id, [])
         full_name = None
         for item in target_items:
-            if item.startswith(f"Пробка {cap_tag}-"):
+            if item.lower().startswith(f"Пробка {cap_tag}-"):
                 full_name = item
                 break
         if not full_name:
