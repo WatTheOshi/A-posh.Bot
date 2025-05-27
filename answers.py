@@ -139,7 +139,6 @@ def setup(bot):
     
         for call in calls:
             if call in message_content.split() or f" {call} " in f" {message_content} ":
-                print(f"[answers] Найдено обращение: {call}")  # Отладочный вывод
                 async with message.channel.typing():
                     await asyncio.sleep(random.uniform(0.5, 2.0))
                     responses = [
@@ -155,7 +154,6 @@ def setup(bot):
                         "command = ban.user.user-said(bot.name)... Да ладно, я пошутила ))",
                         "sudo respond_to @user — готово! :mage:",
                         "404 Error... Шутка! Я онлайн :satellite:",
-                        "while True: print('Чё? Чё? Чё? Чё? Чё? Чё? \nЧё? Чё? Чё? Чё? Чё? Чё? \nЧё? Чё?')",
                         "sudo give_attention --user @{author} → Выполнено! (◕‿◕✿)",
                         "Алярм! Сенсоры имени активированы! 🔍",
                         "git commit -m 'Реагирую на вызов' --force-push",

@@ -113,7 +113,7 @@ def setup(bot):
                 )
                 await ctx.send(embed=embed)
             except Exception as e:
-                await ctx.send(f"Произошла ошибка: {e}")
+                await ctx.send(f"Эхх, не получилось!")
         else:
             embed = discord.Embed(
                 title='Блять, не всё так просто',
