@@ -59,3 +59,20 @@ def setup(bot):
             return
         await member.remove_roles(role)
         await ctx.send(f"Роль {role.name} отобрана у {member.mention}!")
+
+    @bot.command(name="welcome")
+    @commands.has_permissions(administrator=True)
+    async def welcome(ctx, channel: discord.TextChannel = None):
+        """Устанавливает канал для приветственных сообщений."""
+        if channel is None:
+            await ctx.send("Пожалуйста, укажите канал для приветствий.")
+            return
+        # Сохраняем канал в контексте или базе данных
+        async def welcome(ctx, channel: discord.TextChannel):
+            config = await load_json(CONFIG_FILE)
+            cfg = config.get(str(ctx.guild.id), {})
+            cfg['welcome_channel'] = channel.id
+            config[str(ctx.guild.id)] = cfg
+            await save_json(CONFIG_FILE, config)
+        # Здесь можно добавить логику сохранения канала
+        await ctx.send(f"Канал для приветствий установлен: {channel.mention}")

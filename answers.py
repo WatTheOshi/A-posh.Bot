@@ -129,7 +129,7 @@ def setup(bot):
             "апошат", "апошад", "апошамь", "апошеми", "апошеси", "апошеш",
             "апошиш", "апошыш", "апошюш", "апошяш", "апошаш", "апошеш", "апошош",
             "апошкэ", "апошке", "апошкя", "апошкь", "апошкю", "апошкы", "апошкё", "апошко",
-            "апошша", "апошшя", "апошшю", "апошшк", "апошшь", "апошшш", "апошшц", "апошшч",
+            "апошша", "апошшя", "апошшю", "апошшк", "апошь", "апошшш", "апошшц", "апошшч",
             "апош!", "апош??", "апош?!", "апош...", "апош.)", "апош)", "апош-апош", "апош-апош?",
             "апошць", "апошцьк", "апошцько", "апошдзь", "апошдзик", "апошцьок",
             "апошь", "апошька", "апошька?", "апошь?", "апошька!", "апошька!!", "апошька!!!",
@@ -166,7 +166,27 @@ def setup(bot):
                     last_response_time = now
                 return
             
-            
         # Передача управления командам
         print("[answers] Передача управления bot.process_commands.")  # Отладочный вывод
         await bot.process_commands(message)
+
+    @bot.event
+    async def on_member_join(member: discord.Member):
+        """Вызывается при присоединении к серверу."""
+        config = await load_json(CONFIG_FILE)
+        guild = member.guild
+        channel_id = config.get(str(guild.id), {}).get('welcome_channel')
+        channel = guild.get_channel(channel_id) if channel_id else guild.system_channel
+
+        embed = discord.Embed(
+            title="Приветствие от Апош!",
+            description=(
+                f'{member.mention}, Вы на территории поместья **"{guild.name}"**! Если нужна помощь, просто напиши **&help**. '
+                'Осматривайся, и помни что надо уважать чужой дом!'
+            ),
+            color=discord.Color.green()
+        )
+        if member.avatar:
+            embed.set_thumbnail(url=member.avatar.url)
+        if channel:
+            await channel.send(embed=embed)
