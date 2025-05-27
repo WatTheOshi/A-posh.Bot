@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import json
+import requests
 
 
 # --- Команды утилиты ---
@@ -76,3 +77,34 @@ def setup(bot):
             await save_json(CONFIG_FILE, config)
         # Здесь можно добавить логику сохранения канала
         await ctx.send(f"Канал для приветствий установлен: {channel.mention}")
+
+    @bot.command(name="dicten")
+    async def dicten(ctx, word):
+        url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            await ctx.send("❌ У меня не получилось найти такое слово...")
+            return
+
+        data = response.json()
+
+        try:
+            # Берём первое значение, первую часть речи и определение
+            meaning = data[0]["meanings"][0]
+            part_of_speech = meaning["partOfSpeech"]
+            definition = meaning["definitions"][0]["definition"]
+            example = meaning["definitions"][0].get("example", "Не нашлось")
+
+            embed = discord.Embed(
+                title=f":open_book: И так, **{word.capitalize()}**",
+                color=discord.Color.light_embed()
+            )
+            embed.add_field(name=":jigsaw: Часть речи: ", value=part_of_speech, inline=False)
+            embed.add_field(name=":point_up: Определение: ", value=definition, inline=False)
+            embed.add_field(name=":cocktail: Пример: ", value=example, inline=False)
+
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send("⚠️ Что-то пошло не так при разборе ответа API.")
