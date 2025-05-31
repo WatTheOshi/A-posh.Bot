@@ -8,6 +8,7 @@ import random
 import time
 import humanfriendly
 from datetime import datetime, timezone, timedelta
+special_user_id = 773282996324270141  # ID создателя
 
 
 # --- Команды взаимодействия ---
@@ -94,6 +95,12 @@ def setup(bot):
                 elif message.content.startswith("&dolove"):
                     await ctx.send(f"_**DODGE!**_ \n{ctx.author.mention} уклоняется от неожиданных действий!")
                     return
+                elif message.content.startswith("&feed"):
+                    await ctx.send(f"_**DODGE!**_ \n{ctx.author.mention} уклоняется от еды!")
+                    return
+                elif message.content.startswith("&bonk"):
+                    await ctx.send(f"_**DODGE!**_ \n{ctx.author.mention} уклоняется от бонка!")
+                    return
                 elif message.content.startswith("&dodge"):
                     await ctx.send("https://tenor.com/bVA8m.gif")
                     return
@@ -148,4 +155,73 @@ def setup(bot):
     async def rape(ctx, member: discord.Member):
         await ctx.send(f"бывают же ебланы... не смей такое писать, {ctx.author.mention}!")
         return
+
+    @bot.command(name="feed")
+    async def feed(ctx, member: discord.Member):
+            """feeding user"""
+            if member == ctx.author:
+                await ctx.send("Видимо кто-то решил обедать?")
+                return
+            if member == bot.user:
+                await ctx.send("//°o°//")
+                return
+            await ctx.send(f":watermelon: \n{ctx.author.mention} кормит {member.mention}!")
+
+    @bot.command(name="bonk")
+    async def bonk(ctx, member: discord.Member):
+            """bonk user"""
+            if member == ctx.author:
+                await ctx.send("Ээ, ну, это странно... Не стоит так делать!")
+                return
+            if member == bot.user:
+                await ctx.send("***DODGE!*** \nНеа! Меня нельзя!")
+                return
+            await ctx.send(f":heart_eyes: \n{ctx.author.mention} стукнул {member.mention} по макушке!")
+
+    @bot.command(name="summon")
+    async def summon(ctx, member: discord.Member):
+            """tries to summon user"""
+            if member == ctx.author:
+                await ctx.send("Ты патаешься кого-то запутать?")
+                return
+            if member == bot.user:
+                await ctx.send("*шепчет сзади* А я всегда тут~")
+                return
+            await ctx.send(f":heart_eyes: \n{ctx.author.mention} колдует призыв {member.mention}!")
+            await asyncio.sleep(2)
+            await ctx.send(f":sparkler: {member.mention} :sparkler:")
+
+    @bot.command(name="glitch")
+    async def glitch(ctx):
+        """Присылает гифку с глитчем"""
+        await ctx.send("https://tenor.com/bZw7b.gif")
+
+    @bot.command(name="pair")
+    async def pair(ctx, doveOne: discord.Member, doveTwo: discord.Member):
+        """Pair percentage between members"""
+
+        if doveOne == doveTwo:
+            await ctx.send("Это ведь один и тот же человек? Наверное, должно быть 100%... Хотя, кто знает? :thinking:")
+            return
+
+        # Исправленное условие
+        elif (
+            (doveOne == bot.user and doveTwo.id == special_user_id) or
+            (doveTwo == bot.user and doveOne.id == special_user_id)
+        ):
+            await ctx.send("~~76%~~ :pen_fountain: \n_**BLUSH!**_ \n**999%** :pen_fountain: \n_**KISS!**_")
+            return
+
+        else: 
+            def digit_sum(user_id):
+                return sum(int(digit) for digit in str(user_id))
+
+            sum_one = digit_sum(doveOne.id)
+            sum_two = digit_sum(doveTwo.id)
+
+            total = sum_one + sum_two
+            percentage = (total % 101)
+
+            await ctx.send(f":revolving_hearts: Совместимость между {doveOne.display_name} и {doveTwo.display_name}: {percentage}%")
+
 
