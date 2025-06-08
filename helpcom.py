@@ -27,6 +27,8 @@ help_sections = [
             ("**&giverole @user [роль]**", "Дам кому-то роль!"),
             ("**&rmrole @user [роль]**", "Могу роль и отнять..."),
             ("**&dicten [слово]**", "Расскажу определение английского слова из словаря!"),
+            ("**&voice [Макс. число участников]**", "Создаю временный голосовой канал с указанным лимитом участников!"),
+            ("**&ticket**", "Создаю тикет для быстрого обращения к администрации!"),
             ("**&welcome #channel**", "Устанавливаю канал для приветственных сообщений!"),
         ]
     },
@@ -88,7 +90,7 @@ class HelpView(View):
         self.author_id = author_id
         self.max_pages = len(help_sections) - 1
 
-    @discord.ui.button(label="⬅️ Назад", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="< Назад", style=discord.ButtonStyle.secondary)
     async def previous(self, interaction: discord.Interaction, button: Button):
         if interaction.user.id != self.author_id:
             await interaction.response.send_message("Ты не вызывал это меню~", ephemeral=True)
@@ -98,7 +100,7 @@ class HelpView(View):
             self.page -= 1
             await interaction.response.edit_message(embed=create_help_embed(self.page), view=self)
 
-    @discord.ui.button(label="➡️ Далее", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="> Далее", style=discord.ButtonStyle.secondary)
     async def next(self, interaction: discord.Interaction, button: Button):
         if interaction.user.id != self.author_id:
             await interaction.response.send_message("Это не твоё меню, дорогуша", ephemeral=True)
@@ -126,3 +128,18 @@ def setup(bot):
     async def Aposh(ctx):
         await ctx.send(f"Привет, **{ctx.author.display_name}**! Меня зовут **Апош**, меня прислали на помощь! \n"
                        "Если нужна помощь, просто напиши **&help** и я расскажу, что я умею! \n")
+        
+    @bot.command(name="latest")
+    async def latest(ctx):
+        """Отправляет эмбед с информацией о последнем обновлении."""
+        embed = discord.Embed(
+            title="Последнее обновление",
+            description="**Версия _Lace & Logic_**\n\n"
+                        "- Добавлена команда **&voice [Макс. число участников]** создающая временный войс! \n"
+                        "- Добавлено создание быстрых тикетов **&ticket**!\n"
+                        "- Добавлена команда **&latest** для получения информации о последнем обновлении.\n"
+                        "_& Секрет..._",
+            color=discord.Color.green()
+        )
+        await ctx.send(embed=embed)
+        await ctx.send("Коммит Stable обновления: \nhttps://github.com/WatTheOshi/A-posh.Bot/commit/383ad01275565bddc0965a387dc64f40f3bfb68d")
