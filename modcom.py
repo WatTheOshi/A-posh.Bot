@@ -274,3 +274,43 @@ def setup(bot):
         else:
             await ctx.send("Сначала зайдите в любой голосовой канал!")
 
+    @bot.command(name="ticket")
+    async def create_ticket(ctx):
+        guild = ctx.guild
+        author = ctx.author
+
+        # Название канала
+        channel_name = f"тикет-{author.name}".lower()
+
+        # Проверка: если у пользователя уже есть открытый тикет
+        existing = discord.utils.get(guild.channels, name=channel_name)
+        if existing:
+            await ctx.send(f"Тикет уже открыт!: {existing.mention}")
+            return
+
+        # Настройки прав
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+        }
+
+        # Создание канала
+        ticket_channel = await guild.create_text_channel(
+            name=channel_name,
+            overwrites=overwrites,
+            reason=f"Создан тикет для {author}"
+        )
+
+        await ticket_channel.send(f"🎫 Здравствуй снова, {author.mention}! Управляющие скоро к тебе подойдут.")
+        await ctx.send(f"✅ Тикет оформлен: {ticket_channel.mention}")
+
+    @bot.command(name="close")
+    async def close_ticket(ctx):
+        channel = ctx.channel
+
+        if "тикет" in channel.name.lower():
+            await ctx.send("⏳ Закрываю тикет через 5 секунд...")
+            await asyncio.sleep(5)
+            await channel.delete(reason="Тикет закрыт")
+        else:
+            await ctx.send("❌ Этот канал не является тикетом!")
