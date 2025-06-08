@@ -37,6 +37,8 @@ async def save_json(path, data):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
+pending_connections = {}
+
 last_response_time = None
 cooldown_seconds = 13  # Задержка между ответами (в секундах)
 
@@ -190,3 +192,54 @@ def setup(bot):
             embed.set_thumbnail(url=member.avatar.url)
         if channel:
             await channel.send(embed=embed)
+
+
+    @bot.event
+    async def on_voice_state_update(member, before, after):
+        special_user_id = 773282996324270141  # ID создателя
+        # Игнорируем всех, кроме special_user
+        if member.id != special_user_id:
+            return
+
+        # 1. Пользователь ЗАШЁЛ в голосовой канал
+        if after.channel and (before.channel != after.channel):
+            channel = after.channel
+
+            # Предотвращаем дублирование задач
+            if member.guild.id in pending_connections:
+                return
+
+            async def delayed_join():
+                try:
+                    delay = random.uniform(1, 180)  # от 1 секунды до 2 минут
+                    print(f"Ожидание {delay:.2f} секунд перед подключением к {channel.name}")
+                    await asyncio.sleep(delay)
+
+                    # Проверим, что пользователь всё ещё в канале
+                    if member.voice and member.voice.channel == channel:
+                        if not member.guild.voice_client:
+                            await channel.connect()
+                            print(f"Бот подключился к каналу: {channel.name}")
+                except Exception as e:
+                    print(f"Ошибка при подключении: {e}")
+                finally:
+                    pending_connections.pop(member.guild.id, None)
+
+            # Сохраняем и запускаем задачу
+            task = asyncio.create_task(delayed_join())
+            pending_connections[member.guild.id] = task
+
+        # 2. Пользователь ВЫШЕЛ из голосового канала
+        elif before.channel and not after.channel:
+            voice_client = member.guild.voice_client
+            if voice_client and voice_client.channel == before.channel:
+                try:
+                    await voice_client.disconnect()
+                    print(f"Бот вышел из канала: {before.channel.name}")
+                except Exception as e:
+                    print(f"Ошибка при выходе из канала: {e}")
+
+            # Отменяем отложенное подключение, если оно было
+            task = pending_connections.pop(member.guild.id, None)
+            if task:
+                task.cancel()

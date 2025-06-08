@@ -229,3 +229,48 @@ def setup(bot):
 
         except Exception as e:
             await ctx.send(f"Произошла ошибка при чтении логов: {e}")
+
+    @bot.command(name="voice")
+    async def voice(ctx, amountUsers: int):
+        """Создаёт приватный голосовой канал в той же категории, где был пользователь."""
+        # Проверяем, что пользователь в голосовом канале
+        if ctx.author.voice and ctx.author.voice.channel:
+            guild = ctx.guild
+            author = ctx.author
+            old_channel = ctx.author.voice.channel
+            category = old_channel.category  # Получаем категорию текущего голосового канала
+
+            # Создаём канал
+            overwrites = {
+                guild.default_role: discord.PermissionOverwrite(connect=False),
+                author: discord.PermissionOverwrite(connect=True, manage_channels=True)
+            }
+            channel = await guild.create_voice_channel(
+                name=f"& Собрание {author.name}",
+                user_limit=amountUsers,
+                overwrites=overwrites,
+                category=category,  # Указываем категорию
+                reason="Приватное собрание"
+            )
+
+            await ctx.send("Приватное собрание организовано!")
+            # Перемещаем пользователя в новый канал
+            await author.move_to(channel)
+
+            # Функция для удаления канала, если он пуст
+            async def delete_when_empty(channel):
+                while True:
+                    await asyncio.sleep(1)
+                    ch = guild.get_channel(channel.id)
+                    if ch is None:
+                        break
+                    if len(ch.members) == 0:
+                        await ctx.send(f"Собрание {author.name} окончилось...")
+                        await ch.delete(reason="Приватный канал опустел")
+                        break
+
+            # Запускаем задачу на удаление
+            ctx.bot.loop.create_task(delete_when_empty(channel))
+        else:
+            await ctx.send("Сначала зайдите в любой голосовой канал!")
+
