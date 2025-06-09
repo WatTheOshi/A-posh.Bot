@@ -242,7 +242,7 @@ def setup(bot):
 
             # Создаём канал
             overwrites = {
-                guild.default_role: discord.PermissionOverwrite(connect=False),
+                guild.default_role: discord.PermissionOverwrite(connect=True),
                 author: discord.PermissionOverwrite(connect=True, manage_channels=True)
             }
             channel = await guild.create_voice_channel(
