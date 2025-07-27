@@ -2,7 +2,12 @@ import discord
 from discord.ext import commands
 import json
 import requests
+import asyncio
+import random
+import os
 
+m_dice = 100 #макс число костей
+m_sides = 100 #макс число граней на кости
 
 # --- Команды утилиты ---
 def setup(bot):
@@ -108,3 +113,40 @@ def setup(bot):
             await ctx.send(embed=embed)
         except Exception as e:
             await ctx.send("⚠️ Что-то пошло не так при разборе ответа API.")
+
+    @bot.command(name="roll")
+    async def roll(ctx, amount: int = 1, dice: int = 0):
+        """Бросает кубик с заданным количеством граней."""
+        total = 0
+        if dice == 0:
+            dice = amount
+            amount = 1
+            roll_try = random.randint(1, dice)
+            total += roll_try
+            gif_msg = await ctx.send("https://tenor.com/bmKbE.gif")
+            await asyncio.sleep(3)
+            await gif_msg.delete()
+            await ctx.send(f"*_Конечный результат!_* \n# :confetti_ball: {total} :confetti_ball:")
+            return
+        if dice < 2:
+            await ctx.send("❌ У кости должно быть как минимум 2 грани!")
+            return
+        elif amount < 1:
+            await ctx.send("❌ Количество бросков должно быть положительным числом...")
+            return
+        elif dice > 100 or amount > 100:
+            await ctx.send(f"Максимальное количество граней и бросков : {m_sides} ")
+            return
+        gif_msg = await ctx.send("https://tenor.com/bmKbE.gif")
+        await asyncio.sleep(3)
+        await gif_msg.delete()
+        roll_log = []
+        for end in range(amount):
+            roll_try = random.randint(1, dice)
+            roll_log.append(roll_try)
+            total += roll_try
+        if amount == 1:
+            return
+        else:
+            await ctx.send(f"*-=-=--=-=-=-==୨ৎ-=-==-=-=-=--=* \n:book: Лог всех дайсов: \n#  {', '.join(map(str, roll_log))} :game_die:")
+        await ctx.send(f"*_Конечный результат!_* \n# :confetti_ball: {total} :confetti_ball:")
